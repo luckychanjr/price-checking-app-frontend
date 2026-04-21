@@ -2,7 +2,7 @@ import { Platform } from 'react-native';
 
 // Paste your deployed API Gateway base URL here when you want the app to talk
 // directly to AWS instead of a local dev server.
-const MANUAL_API_BASE_URL = '';
+const MANUAL_API_BASE_URL = 'https://ooqbjz3cq6.execute-api.us-east-1.amazonaws.com/dev';
 const MANUAL_ADD_ITEM_PATH = '/wishlist';
 const MANUAL_GET_WISHLIST_PATH = '/wishlist';
 const DEFAULT_DEV_PORT = 8000;

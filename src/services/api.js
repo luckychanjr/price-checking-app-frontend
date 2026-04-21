@@ -146,3 +146,39 @@ export const getWishlist = async () => {
     return items.length > 0 ? items : [];
   }
 };
+
+export const deleteItem = async (itemId) => {
+  const res = await fetch(`${API_ENDPOINTS.wishlist}/${encodeURIComponent(itemId)}`, {
+    method: 'DELETE',
+  });
+
+  const data = await parseJson(res);
+  ensureOk(res, data);
+
+  const items = await readWishlist();
+  const nextItems = items.filter((item) => item.itemId !== itemId);
+  await saveWishlist(nextItems);
+
+  return data ?? { success: true, itemId };
+};
+
+export const refreshItem = async (itemId) => {
+  const res = await fetch(
+    `${API_ENDPOINTS.wishlist}/${encodeURIComponent(itemId)}/refresh`,
+    {
+      method: 'POST',
+    },
+  );
+
+  const data = await parseJson(res);
+  ensureOk(res, data);
+
+  const refreshedItem = normalizeItem(data, { itemId });
+  const items = await readWishlist();
+  const nextItems = items.map((item) =>
+    item.itemId === itemId ? refreshedItem : item,
+  );
+  await saveWishlist(nextItems);
+
+  return refreshedItem;
+};
