@@ -1,37 +1,48 @@
 import React from 'react';
-import { View, Text, Button, Image, StyleSheet } from 'react-native';
+import { View, Text, Button, Image, Pressable, StyleSheet } from 'react-native';
 
 export default function ItemCard({
   item,
   onAdd,
   onRefresh,
   onDelete,
+  onPress,
   adding = false,
   refreshing = false,
   deleting = false,
 }) {
   return (
     <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <View style={styles.imageWrapper}>
-          {item.image ? (
-            <Image source={{ uri: item.image }} style={styles.image} resizeMode="contain" />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Text style={styles.placeholderText}>No Image</Text>
-            </View>
-          )}
+      <Pressable
+        onPress={onPress}
+        disabled={!onPress}
+        style={({ pressed }) => [
+          styles.headerPressable,
+          pressed && onPress ? styles.headerPressableActive : null,
+        ]}
+      >
+        <View style={styles.headerRow}>
+          <View style={styles.imageWrapper}>
+            {item.image ? (
+              <Image source={{ uri: item.image }} style={styles.image} resizeMode="contain" />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Text style={styles.placeholderText}>No Image</Text>
+              </View>
+            )}
+          </View>
+          <View style={styles.content}>
+            <Text style={styles.name}>{item.name}</Text>
+            <Text style={styles.meta}>Best Price: ${item.lowestPrice.toFixed(2)}</Text>
+            <Text style={styles.meta}>Retailer: {item.cheapestRetailer}</Text>
+            <Text style={styles.meta}>Updated: {item.lastUpdated}</Text>
+            {onPress ? <Text style={styles.detailHint}>Tap to compare retailer offers</Text> : null}
+            {refreshing ? (
+              <Text style={styles.refreshStatus}>Fetching new price...</Text>
+            ) : null}
+          </View>
         </View>
-        <View style={styles.content}>
-          <Text style={styles.name}>{item.name}</Text>
-          <Text style={styles.meta}>Best Price: ${item.lowestPrice.toFixed(2)}</Text>
-          <Text style={styles.meta}>Retailer: {item.cheapestRetailer}</Text>
-          <Text style={styles.meta}>Updated: {item.lastUpdated}</Text>
-          {refreshing ? (
-            <Text style={styles.refreshStatus}>Fetching new price...</Text>
-          ) : null}
-        </View>
-      </View>
+      </Pressable>
       <View style={styles.actions}>
         {onAdd ? (
           <View style={styles.actionButtonSingle}>
@@ -65,9 +76,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#d1d5db',
     borderRadius: 12,
-    padding: 12,
     marginVertical: 8,
     backgroundColor: '#ffffff',
+  },
+  headerPressable: {
+    padding: 12,
+    borderRadius: 12,
+  },
+  headerPressableActive: {
+    backgroundColor: '#f8fafc',
   },
   headerRow: {
     flexDirection: 'row',
@@ -118,9 +135,17 @@ const styles = StyleSheet.create({
     color: '#2563eb',
     marginTop: 4,
   },
+  detailHint: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#0f766e',
+    marginTop: 4,
+  },
   actions: {
     flexDirection: 'row',
     marginTop: 12,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
   },
   actionButton: {
     flex: 1,

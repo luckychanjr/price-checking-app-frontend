@@ -12,8 +12,36 @@ const isUrlInput = (value) => {
   }
 };
 
+const normalizeOffer = (offer, fallback = {}) => {
+  const price = Number(
+    offer?.price ??
+      fallback.price ??
+      0,
+  );
+
+  return {
+    retailer: offer?.retailer ?? fallback.retailer ?? 'Unknown',
+    retailerId: String(offer?.retailerId ?? fallback.retailerId ?? ''),
+    name: offer?.name ?? fallback.name ?? 'Unknown Item',
+    price,
+    url: offer?.url ?? fallback.url ?? '',
+    image: offer?.image ?? fallback.image ?? '',
+  };
+};
+
+const normalizeOffers = (offers, fallbackOffers = []) => {
+  const sourceOffers = Array.isArray(offers) && offers.length > 0 ? offers : fallbackOffers;
+
+  return sourceOffers
+    .filter(Boolean)
+    .map((offer) => normalizeOffer(offer))
+    .filter((offer) => Number.isFinite(offer.price) && offer.price > 0)
+    .sort((a, b) => a.price - b.price);
+};
+
 const normalizeItem = (item, fallback = {}) => {
-  const firstOffer = Array.isArray(item?.offers) ? item.offers.find(Boolean) : null;
+  const offers = normalizeOffers(item?.offers, fallback.offers);
+  const firstOffer = offers[0] ?? null;
 
   return {
     itemId: String(item?.itemId ?? item?.id ?? fallback.itemId ?? Date.now()),
@@ -46,6 +74,8 @@ const normalizeItem = (item, fallback = {}) => {
       item?.createdAt ??
       fallback.lastUpdated ??
       new Date().toISOString(),
+    sourceInput: item?.sourceInput ?? fallback.sourceInput ?? '',
+    offers,
   };
 };
 
@@ -53,7 +83,8 @@ const hasMeaningfulText = (value) =>
   typeof value === 'string' && value.trim() !== '' && value.trim().toLowerCase() !== 'unknown item';
 
 const mergeRefreshedItem = (existingItem, refreshedData) => {
-  const firstOffer = Array.isArray(refreshedData?.offers) ? refreshedData.offers.find(Boolean) : null;
+  const offers = normalizeOffers(refreshedData?.offers, existingItem?.offers);
+  const firstOffer = offers[0] ?? null;
   const refreshedPrice = Number(
     refreshedData?.lowestPrice ??
       refreshedData?.cheapestPrice ??
@@ -84,6 +115,11 @@ const mergeRefreshedItem = (existingItem, refreshedData) => {
       refreshedData?.lastUpdated ??
       refreshedData?.updatedAt ??
       new Date().toISOString(),
+    sourceInput:
+      refreshedData?.sourceInput ??
+      existingItem?.sourceInput ??
+      '',
+    offers,
   };
 };
 
@@ -178,8 +214,9 @@ export const searchItems = async (input) => {
       input: trimmedInput,
       image: item?.image ?? item?.offers?.[0]?.image ?? '',
       url: item?.url ?? item?.offers?.[0]?.url ?? '',
+      sourceInput: item?.sourceInput ?? trimmedInput,
+      offers: item?.offers,
     }),
-    offers: Array.isArray(item?.offers) ? item.offers : [],
     sourceInput: item?.sourceInput ?? trimmedInput,
     raw: item,
   }));

@@ -13,7 +13,7 @@ import {
 import { addItem, deleteItem, getWishlist, refreshItem, searchItems } from '../services/api';
 import ItemCard from '../components/ItemCard';
 
-export default function WishlistScreen() {
+export default function WishlistScreen({ navigation }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deletingItemId, setDeletingItemId] = useState(null);
@@ -122,6 +122,10 @@ export default function WishlistScreen() {
     }
   };
 
+  const openProductDetails = (item) => {
+    navigation.navigate('Product Details', { item });
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Wishlist Price Comparison</Text>
@@ -189,6 +193,7 @@ export default function WishlistScreen() {
               <ItemCard
                 item={item}
                 adding={addingResultKey === item.itemId}
+                onPress={() => openProductDetails(item)}
                 onAdd={() => handleAddSearchResult(item)}
               />
             )}
@@ -208,6 +213,7 @@ export default function WishlistScreen() {
                 item={item}
                 refreshing={refreshingItemId === item.itemId}
                 deleting={deletingItemId === item.itemId}
+                onPress={() => openProductDetails(item)}
                 onRefresh={() => handleRefresh(item)}
                 onDelete={() => handleDelete(item)}
               />
